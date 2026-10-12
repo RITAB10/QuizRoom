@@ -1,0 +1,139 @@
+[
+  {
+    "id": "quiz_sample_webdev_101",
+    "title": "Web Development Essentials",
+    "description": "Test your foundational knowledge of HTML5, modern CSS3 styling, JavaScript core concepts, and web protocols.",
+    "settings": {
+      "overallTimerMinutes": 0,
+      "defaultQuestionTime": 25,
+      "shuffleQuestions": false,
+      "shuffleOptions": false,
+      "showCorrectAnswers": true,
+      "passingScore": 70
+    },
+    "questions": [
+      {
+        "id": "q1",
+        "type": "mcq",
+        "text": "What does CSS stand for in web development?",
+        "options": [
+          "Computer Style Sheets",
+          "Cascading Style Sheets",
+          "Creative Styling Syntax",
+          "Colorful Screen Styles"
+        ],
+        "correctIndex": 1,
+        "timeLimit": 20,
+        "points": 100,
+        "explanation": "CSS stands for Cascading Style Sheets. The 'Cascading' refers to the specific order and specificity rules governing which styles apply."
+      },
+      {
+        "id": "q2",
+        "type": "mcq",
+        "text": "Which HTML5 element represents the primary navigation links of a document?",
+        "options": ["<header>", "<navigate>", "<nav>", "<menu>"],
+        "correctIndex": 2,
+        "timeLimit": 20,
+        "points": 100,
+        "explanation": "The <nav> element is semantic HTML5 designed specifically for major navigation blocks such as menus and tables of contents."
+      },
+      {
+        "id": "q3",
+        "type": "tf",
+        "text": "In JavaScript, 'typeof null' evaluates to 'object'.",
+        "options": ["True", "False"],
+        "correctIndex": 0,
+        "timeLimit": 15,
+        "points": 100,
+        "explanation": "True! This is a historical bug in JavaScript from its first implementation in 1995 that is preserved for backwards compatibility."
+      },
+      {
+        "id": "q4",
+        "type": "mcq",
+        "text": "What HTTP status code represents '404'?",
+        "options": ["Unauthorized", "Internal Server Error", "Not Found", "Bad Request"],
+        "correctIndex": 2,
+        "timeLimit": 20,
+        "points": 100,
+        "explanation": "HTTP 404 indicates that the server cannot find the requested resource or URL."
+      },
+      {
+        "id": "q5",
+        "type": "tf",
+        "text": "CSS Flexbox is designed primarily for two-dimensional grid layouts with rows and columns.",
+        "options": ["True", "False"],
+        "correctIndex": 1,
+        "timeLimit": 15,
+        "points": 100,
+        "explanation": "False! Flexbox is primarily one-dimensional (either row OR column). CSS Grid is the layout module designed specifically for 2D layouts."
+      }
+    ],
+    "createdAt": 1728739120000
+  },
+  {
+    "id": "quiz_sample_space_202",
+    "title": "Cosmic Science & Planetary Wonders",
+    "description": "Journey through the cosmos with questions covering our solar system, physics, stars, and space exploration.",
+    "settings": {
+      "overallTimerMinutes": 0,
+      "defaultQuestionTime": 25,
+      "shuffleQuestions": false,
+      "shuffleOptions": false,
+      "showCorrectAnswers": true,
+      "passingScore": 60
+    },
+    "questions": [
+      {
+        "id": "sq1",
+        "type": "mcq",
+        "text": "Which planet in our solar system has the highest number of confirmed moons?",
+        "options": ["Jupiter", "Saturn", "Neptune", "Uranus"],
+        "correctIndex": 1,
+        "timeLimit": 20,
+        "points": 100,
+        "explanation": "Saturn leads the solar system with 146 recognized moons (surpassing Jupiter as of recent astronomical observations)."
+      },
+      {
+        "id": "sq2",
+        "type": "mcq",
+        "text": "Approximately how long does light from the Sun take to reach Earth?",
+        "options": ["8 seconds", "8 minutes and 20 seconds", "1 hour", "Instantaneous"],
+        "correctIndex": 1,
+        "timeLimit": 20,
+        "points": 100,
+        "explanation": "Traveling at roughly 300,000 km/s over an average distance of 150 million km, sunlight takes about 8 minutes and 20 seconds."
+      },
+      {
+        "id": "sq3",
+        "type": "tf",
+        "text": "Sound travels faster through a vacuum in outer space than through Earth's atmosphere.",
+        "options": ["True", "False"],
+        "correctIndex": 1,
+        "timeLimit": 15,
+        "points": 100,
+        "explanation": "False! Sound requires a physical medium (molecules) to travel. In the vacuum of space, sound cannot travel at all."
+      },
+      {
+        "id": "sq4",
+        "type": "mcq",
+        "text": "What is the chemical symbol for Gold on the periodic table?",
+        "options": ["Ag", "Au", "Gd", "Fe"],
+        "correctIndex": 1,
+        "timeLimit": 15,
+        "points": 100,
+        "explanation": "Au comes from the Latin word for gold, 'aurum', which means 'shining dawn'."
+      },
+      {
+        "id": "sq5",
+        "type": "tf",
+        "text": "The Apollo 11 moon landing occurred in the year 1969.",
+        "options": ["True", "False"],
+        "correctIndex": 0,
+        "timeLimit": 15,
+        "points": 100,
+        "explanation": "True! Astronauts Neil Armstrong and Buzz Aldrin stepped onto the lunar surface on July 20, 1969."
+      }
+    ],
+    "createdAt": 1728735520000
+  }
+]

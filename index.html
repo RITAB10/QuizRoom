@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QuizRoom - Interactive Quiz Builder & Live Leaderboard</title>
+  <meta name="description" content="Create, share, and play interactive quizzes instantly. Includes countdown timers, speed bonuses, offline QR code sharing, and a live host leaderboard.">
+
+  <!-- Favicon SVG -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+
+  <!-- Core Stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Fullscreen Canvas for Confetti -->
+  <canvas id="confettiCanvas"></canvas>
+
+  <!-- Toast Notifications Container -->
+  <div class="toast-container" id="toastContainer" role="status" aria-live="polite"></div>
+
+  <!-- Application Header -->
+  <header class="app-header">
+    <div class="header-container">
+      <a href="index.html" class="brand" title="QuizRoom Home">
+        <div class="brand-icon">⚡</div>
+        <span>QuizRoom</span>
+        <span class="brand-badge">App</span>
+      </a>
+
+      <!-- Navigation Tabs -->
+      <nav class="nav-tabs" aria-label="Main Navigation">
+        <button type="button" class="nav-tab-btn active" data-tab="builder" id="navTabBuilder">
+          <span>✏️</span> <span>Builder</span>
+        </button>
+        <button type="button" class="nav-tab-btn" data-tab="dashboard" id="navTabDashboard">
+          <span>📊</span> <span>Dashboard</span>
+        </button>
+        <button type="button" class="nav-tab-btn" data-tab="player" id="navTabPlayer">
+          <span>🎮</span> <span>Play Quiz</span>
+        </button>
+        <button type="button" class="nav-tab-btn" data-tab="library" id="navTabLibrary">
+          <span>📚</span> <span>Library</span>
+        </button>
+        <button type="button" class="nav-tab-btn" data-tab="attempts" id="navTabAttempts">
+          <span>📜</span> <span>My Attempts</span>
+        </button>
+      </nav>
+
+      <!-- Header Actions -->
+      <div class="header-actions">
+        <button type="button" class="theme-toggle-btn" id="themeToggleBtn" aria-label="Toggle Dark or Light theme" title="Toggle Theme">
+          🌙
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Layout -->
+  <main class="main-content">
+
+    <!-- ====================================================================
+         VIEW 1: Host Quiz Builder
+         ==================================================================== -->
+    <section class="view-section active" id="view-builder" aria-label="Quiz Builder">
+      
+      <!-- Top Action Bar -->
+      <div class="builder-actions-bar">
+        <div class="draft-status">
+          <div class="draft-indicator"></div>
+          <span id="draftStatusText">Auto-save enabled (localStorage)</span>
+        </div>
+        <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+          <button type="button" class="btn btn-secondary btn-sm" id="btnResetQuiz" title="Clear and start new quiz">📄 New</button>
+          <input type="file" id="jsonFileInput" accept=".json" style="display:none;">
+          <button type="button" class="btn btn-secondary btn-sm" id="btnImportJson" title="Import quiz from JSON file">📥 Import JSON</button>
+          <button type="button" class="btn btn-secondary btn-sm" id="btnExportJson" title="Download quiz as JSON">💾 Export JSON</button>
+          <button type="button" class="btn btn-secondary btn-sm" id="btnSaveQuiz" title="Save to local library">⭐ Save Quiz</button>
+          <button type="button" class="btn btn-primary btn-sm" id="btnShareQuiz">🚀 Share Quiz</button>
+        </div>
+      </div>
+
+      <!-- Quiz Details & Settings Card -->
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">📝 Quiz Information & Settings</h2>
+          <span class="badge badge-primary" id="builderQuestionCount">1 question</span>
+        </div>
+
+        <div class="form-row">
+          <div>
+            <label for="quizTitleInput" class="form-label">Quiz Title *</label>
+            <input type="text" id="quizTitleInput" class="form-input" placeholder="e.g., Computer Science Trivia 101" required>
+          </div>
+          <div>
+            <label for="passingScoreInput" class="form-label">Passing Score (%)</label>
+            <input type="number" id="passingScoreInput" class="form-input" min="10" max="100" value="70">
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-top:0.75rem;">
+          <label for="quizDescInput" class="form-label">Description / Instructions</label>
+          <textarea id="quizDescInput" class="form-textarea" rows="2" placeholder="Briefly describe what this quiz covers..."></textarea>
+        </div>
+
+        <!-- Quiz Toggles Grid -->
+        <div class="form-row" style="margin-top:1rem; padding-top:1rem; border-top:1px solid var(--border-subtle);">
+          <div>
+            <label for="defaultTimeInput" class="form-label">Default Question Timer (seconds)</label>
+            <input type="number" id="defaultTimeInput" class="form-input" min="5" max="300" value="20">
+          </div>
+          <div>
+            <label class="switch-label">
+              <span>Shuffle Questions</span>
+              <input type="checkbox" id="shuffleQuestionsToggle" class="switch-input">
+              <span class="switch-slider"></span>
+            </label>
+          </div>
+          <div>
+            <label class="switch-label">
+              <span>Shuffle Options</span>
+              <input type="checkbox" id="shuffleOptionsToggle" class="switch-input">
+              <span class="switch-slider"></span>
+            </label>
+          </div>
+          <div>
+            <label class="switch-label">
+              <span>Show Answers at End</span>
+              <input type="checkbox" id="showAnswersToggle" class="switch-input" checked>
+              <span class="switch-slider"></span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Question Cards Container -->
+      <div id="questionsListContainer">
+        <!-- Injected dynamically by QuizEngine -->
+      </div>
+
+      <!-- Add Questions Bar -->
+      <div class="card" style="text-align:center; padding: 1.5rem; border-style:dashed;">
+        <h3 style="font-size:1.05rem; margin-bottom:0.75rem; color:var(--text-secondary);">Add More Questions</h3>
+        <div style="display:flex; justify-content:center; gap:0.75rem; flex-wrap:wrap;">
+          <button type="button" class="btn btn-secondary" id="btnAddMcqQuestion">
+            <span>➕</span> Multiple Choice (MCQ)
+          </button>
+          <button type="button" class="btn btn-secondary" id="btnAddTfQuestion">
+            <span>➕</span> True / False
+          </button>
+        </div>
+      </div>
+
+    </section>
+
+
+    <!-- ====================================================================
+         VIEW 2: Host Dashboard & Live Leaderboard
+         ==================================================================== -->
+    <section class="view-section" id="view-dashboard" aria-label="Host Dashboard">
+      
+      <!-- Dashboard Top Header Bar -->
+      <div class="builder-actions-bar" style="margin-bottom:1.5rem;">
+        <div style="display:flex; align-items:center; gap:0.75rem; flex-wrap:wrap;">
+          <label for="dashboardQuizSelect" class="form-label" style="margin:0; font-weight:700;">Active Quiz:</label>
+          <select id="dashboardQuizSelect" class="form-select" style="width:auto; min-width:240px;"></select>
+        </div>
+        <div style="display:flex; gap:0.5rem;">
+          <button type="button" class="btn btn-secondary btn-sm" id="btnClearLeaderboard" title="Clear current leaderboard">🗑️ Clear Board</button>
+          <button type="button" class="btn btn-primary btn-sm" id="btnExportLeaderboardCsv" title="Export as CSV spreadsheet">📥 Export CSV</button>
+        </div>
+      </div>
+
+      <!-- Grid: Left = Result Code Intake, Right = Leaderboard & Podium -->
+      <div class="dashboard-grid">
+        
+        <!-- Left Column: Result Codes Input -->
+        <div class="card code-intake-area">
+          <div class="card-header">
+            <h3 class="card-title">📥 Paste Student Result Codes</h3>
+          </div>
+          <p style="font-size:0.85rem; margin-bottom:0.5rem;">
+            When students complete the quiz, they copy their <strong>Result Code</strong> and send it to you (via chat, email, or classroom). Paste their code(s) below to update the live leaderboard.
+          </p>
+          <div class="form-group">
+            <textarea id="resultCodesInput" class="form-textarea result-codes-textarea" placeholder="Paste result code(s) here... Supports multiple codes pasted at once (one per line):&#10;QRZ-1.eyJ...&#10;QRZ-1.eyJ..."></textarea>
+          </div>
+          <button type="button" class="btn btn-primary" id="btnProcessResultCodes">
+            <span>⚡</span> Process & Add to Leaderboard
+          </button>
+          <div class="form-help">
+            💡 Supports batch pasting! Paste an entire list of student codes to process them all at once.
+          </div>
+        </div>
+
+        <!-- Right Column: Top 3 Podium & Leaderboard Table -->
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">🏆 Quiz Leaderboard</h3>
+            <span class="badge badge-primary" id="leaderboardCountBadge">0 participants</span>
+          </div>
+
+          <!-- Top 3 Podium Display -->
+          <div class="podium-container" id="podiumContainer">
+            <!-- Injected by LeaderboardManager -->
+          </div>
+
+          <!-- Full Table -->
+          <div class="table-responsive">
+            <table class="leaderboard-table" aria-label="Student Leaderboard">
+              <thead>
+                <tr>
+                  <th>Rank</th>
+                  <th>Student Name</th>
+                  <th>Score</th>
+                  <th>Accuracy</th>
+                  <th>Time</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="leaderboardTableBody">
+                <!-- Injected by LeaderboardManager -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- ====================================================================
+         VIEW 3: Student Quiz Player
+         ==================================================================== -->
+    <section class="view-section" id="view-player" aria-label="Quiz Player">
+      <div class="player-container">
+
+        <!-- SCREEN A: Lobby Screen -->
+        <div id="playerScreenLobby" class="card lobby-hero">
+          <div class="lobby-icon">🎯</div>
+          <h1 class="lobby-title" id="playerLobbyTitle">Quiz Title</h1>
+          <p id="playerLobbyDesc" style="max-width:540px; margin:0 auto 1.5rem;">Quiz Description</p>
+
+          <!-- Stat Badges -->
+          <div class="lobby-stats">
+            <div class="lobby-stat-item">
+              <span class="lobby-stat-value" id="playerLobbyQCount">5 Questions</span>
+              <span class="lobby-stat-label">Length</span>
+            </div>
+            <div class="lobby-stat-item">
+              <span class="lobby-stat-value" id="playerLobbyPassScore">70% to Pass</span>
+              <span class="lobby-stat-label">Requirement</span>
+            </div>
+            <div class="lobby-stat-item">
+              <span class="lobby-stat-value" id="playerLobbyTotalTime">~2 min</span>
+              <span class="lobby-stat-label">Estimated Time</span>
+            </div>
+          </div>
+
+          <!-- In-progress Session Alert (If refreshed or resumed) -->
+          <div id="playerResumePrompt" style="display:none; background:var(--warning-bg); border:1px solid var(--warning); border-radius:var(--radius-md); padding:1rem; margin:1.5rem 0; text-align:center;">
+            <p style="color:var(--warning); font-weight:700; margin-bottom:0.5rem;">
+              ⚠️ You have an attempt in progress for <span id="resumeStudentName">Student</span>!
+            </p>
+            <div style="display:flex; justify-content:center; gap:0.75rem;">
+              <button type="button" class="btn btn-primary btn-sm" id="btnResumeQuiz">▶️ Resume Attempt</button>
+              <button type="button" class="btn btn-secondary btn-sm" id="btnRestartQuiz">🔄 Start Over</button>
+            </div>
+          </div>
+
+          <!-- Name Input & Start Button -->
+          <div style="max-width:380px; margin: 1.5rem auto 0;">
+            <div class="form-group" style="text-align:left;">
+              <label for="studentNameInput" class="form-label">Enter Your Name or Nickname *</label>
+              <input type="text" id="studentNameInput" class="form-input" placeholder="e.g., Alex Johnson" maxlength="30" required>
+            </div>
+            <button type="button" class="btn btn-primary btn-lg" id="btnStartQuiz" style="width:100%;">
+              🚀 Start Quiz Now
+            </button>
+          </div>
+        </div>
+
+        <!-- SCREEN B: Active Question Playing Screen -->
+        <div id="playerScreenActive" class="card" style="display:none;">
+          
+          <!-- Header Bar: Question Counter, Score, Countdown -->
+          <div class="quiz-header-bar">
+            <div>
+              <span class="badge badge-primary" id="playerQuestionNumber">Question 1 of 5</span>
+            </div>
+            <div class="timer-container">
+              <div class="timer-pill" id="playerTimerPill">
+                <span>⏱️</span>
+                <span id="playerTimerSeconds">20s</span>
+              </div>
+              <span class="badge badge-success" id="playerCurrentScore">0 pts</span>
+            </div>
+          </div>
+
+          <!-- Progress Bar & Linear Timer Bar -->
+          <div class="progress-track">
+            <div class="progress-fill" id="playerProgressFill" style="width: 0%;"></div>
+          </div>
+          <div class="timer-bar-wrapper">
+            <div class="timer-bar-fill" id="playerTimerBarFill" style="width: 100%;"></div>
+          </div>
+
+          <!-- Question Content -->
+          <div class="question-content-box">
+            <h2 class="question-text-display" id="playerQuestionText">Question text here</h2>
+          </div>
+
+          <!-- Tactile Answer Options Grid -->
+          <div class="answers-grid" id="playerAnswersContainer">
+            <!-- Injected by QuizEngine -->
+          </div>
+
+          <!-- Immediate Feedback / Speed Bonus Alert -->
+          <div id="playerExplanationBox" class="explanation-callout" style="display:none;"></div>
+
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:1rem; font-size:0.8rem; color:var(--text-muted);">
+            <span>💡 Pro Tip: Press keys <strong>[1]</strong> to <strong>[6]</strong> to select an answer quickly!</span>
+            <span>⚡ Faster answers earn a Speed Bonus!</span>
+          </div>
+
+        </div>
+
+        <!-- SCREEN C: Results Screen -->
+        <div id="playerScreenResults" class="card results-card" style="display:none;">
+          <div id="resultStatusBadge" class="result-badge-status badge-success">🎉 PASSED!</div>
+          
+          <h1 style="font-size:1.75rem; margin-bottom:0.5rem;">Quiz Completed!</h1>
+          <p style="margin-bottom:1.5rem;">Here is how you performed:</p>
+
+          <!-- Big Circular Score Display -->
+          <div class="score-display-circle">
+            <div class="score-number" id="resultScoreVal">380</div>
+            <div class="score-total" id="resultScoreMax">out of 400 pts</div>
+          </div>
+
+          <!-- Metrics Grid -->
+          <div class="result-stats-grid">
+            <div class="result-stat-box">
+              <div class="val" id="resultPctVal">95%</div>
+              <div class="lbl">Accuracy</div>
+            </div>
+            <div class="result-stat-box">
+              <div class="val" id="resultCorrectVal">4 / 5</div>
+              <div class="lbl">Correct Answers</div>
+            </div>
+            <div class="result-stat-box">
+              <div class="val" id="resultTimeVal">1m 15s</div>
+              <div class="lbl">Total Time</div>
+            </div>
+          </div>
+
+          <!-- Copy Result Code Box for Host Submission -->
+          <div class="copy-code-section">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
+              <strong style="color:var(--text-primary); font-size:0.95rem;">📋 Your Result Code</strong>
+              <span class="badge badge-info">Send to Host</span>
+            </div>
+            <p style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:0.5rem;">
+              Copy this code and send it to your quiz host so they can include you on the leaderboard:
+            </p>
+            <div class="code-snippet" id="resultCodeSnippet">QRZ-1.example...</div>
+            <button type="button" class="btn btn-primary" id="btnCopyResultCode" style="width:100%; margin-top:0.5rem;">
+              <span>📋</span> Copy My Result Code
+            </button>
+          </div>
+
+          <!-- Detailed Answer Review Accordion -->
+          <div id="resultsReviewSection" style="margin-top:2rem; text-align:left;">
+            <h3 style="font-size:1.15rem; margin-bottom:1rem; padding-bottom:0.5rem; border-bottom:1px solid var(--border-subtle);">
+              🔍 Review Questions & Explanations
+            </h3>
+            <div id="resultsReviewList">
+              <!-- Injected by QuizEngine -->
+            </div>
+          </div>
+
+          <!-- Bottom Actions -->
+          <div style="display:flex; justify-content:center; gap:0.75rem; margin-top:2rem;">
+            <button type="button" class="btn btn-secondary" onclick="App.switchTab('library')">📚 Explore More Quizzes</button>
+            <button type="button" class="btn btn-primary" onclick="App.switchTab('builder')">✏️ Create Your Own Quiz</button>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- ====================================================================
+         VIEW 4: Quiz Library & Sample Quizzes
+         ==================================================================== -->
+    <section class="view-section" id="view-library" aria-label="Quiz Library">
+      <div style="margin-bottom:1.5rem;">
+        <h2 style="font-size:1.6rem; margin-bottom:0.35rem;">Quiz Library</h2>
+        <p>Explore built-in sample quizzes or manage your saved custom quizzes.</p>
+      </div>
+
+      <div class="dashboard-grid" id="libraryGrid" style="grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));">
+        <!-- Injected by App.renderLibrary -->
+      </div>
+    </section>
+
+
+    <!-- ====================================================================
+         VIEW 5: Student Past Attempts
+         ==================================================================== -->
+    <section class="view-section" id="view-attempts" aria-label="Student Past Attempts">
+      <div style="margin-bottom:1.5rem;">
+        <h2 style="font-size:1.6rem; margin-bottom:0.35rem;">My Past Attempts</h2>
+        <p>Review quizzes you have taken on this browser along with your scores and records.</p>
+      </div>
+
+      <div id="myAttemptsContainer">
+        <!-- Injected by LeaderboardManager.renderMyAttempts -->
+      </div>
+    </section>
+
+  </main>
+
+
+  <!-- ======================================================================
+       MODAL: Share Quiz & QR Code
+       ====================================================================== -->
+  <div class="modal-backdrop" id="shareModal" role="dialog" aria-modal="true" aria-labelledby="shareModalQuizTitle">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 class="modal-title" id="shareModalQuizTitle">Share Quiz</h3>
+        <button type="button" class="btn-tool" id="btnCloseShareModal" aria-label="Close dialog">✕</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size:0.85rem; margin-bottom:1rem;">
+          Anyone with this link can instantly open and take your quiz without any account or backend required:
+        </p>
+        
+        <div class="form-group">
+          <label for="shareUrlInput" class="form-label">Quiz Share Link</label>
+          <input type="text" id="shareUrlInput" class="form-input" readonly onclick="this.select()">
+        </div>
+
+        <div style="display:flex; gap:0.5rem; margin-bottom:1.5rem;">
+          <button type="button" class="btn btn-primary" id="btnCopyShareUrl" style="flex:1;">
+            <span>📋</span> Copy Link
+          </button>
+          <button type="button" class="btn btn-secondary" id="btnOpenShareNewTab">
+            <span>🔗</span> Open as Student
+          </button>
+        </div>
+
+        <!-- Offline QR Code Display -->
+        <div id="shareQrContainer">
+          <!-- Injected by ShareManager.renderQRCode -->
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="App.closeShareModal()">Done</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Application Scripts (Modular, zero dependencies, order-preserved) -->
+  <script src="js/storage.js"></script>
+  <script src="js/share.js"></script>
+  <script src="js/quiz.js"></script>
+  <script src="js/leaderboard.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
